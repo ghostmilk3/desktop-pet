@@ -7,7 +7,7 @@ import threading
 
 from image_loader import load_image_frames
 from launcher_ui import LauncherUI
-
+from loading_ui import LoadingUI
 
 class DesktopPet:
     def __init__(self):
@@ -23,7 +23,7 @@ class DesktopPet:
         # ===== 主窗口 =====
         self.root = tk.Tk()
         self.root.withdraw()
-        self.create_loading_window()
+        self.loading_ui = LoadingUI(self.root, self.exit_all)
         self.root.overrideredirect(True)
         self.root.wm_attributes("-topmost", True)
         self.root.wm_attributes("-transparentcolor", "white")
@@ -52,59 +52,24 @@ class DesktopPet:
             path = item["path"]
             scale = item["scale"]
 
-            self.current_text = f"正在处理第 {i+1}/{len(self.image_configs)} 张图片..."
+            self.current_text = f"🍀 正在处理第 {i+1}/{len(self.image_configs)} 张图片..."
             anim = load_image_frames(path, scale)
             self.all_gifs.append(anim)
 
         self.loading_done = True
 
     # =========================
-    # 加载窗口
-    # =========================
-    def create_loading_window(self):
-        self.loading_win = tk.Toplevel(self.root)
-        self.loading_win.protocol("WM_DELETE_WINDOW", self.exit_all)
-        self.loading_win.title("正在处理")
-        self.loading_win.geometry("260x120")
-        self.loading_win.configure(bg="white")
-        self.loading_win.attributes("-topmost", True)
-
-        screen_w = self.loading_win.winfo_screenwidth()
-        screen_h = self.loading_win.winfo_screenheight()
-        x = (screen_w - 260) // 2
-        y = (screen_h - 120) // 2
-        self.loading_win.geometry(f"+{x}+{y}")
-
-        self.loading_label = tk.Label(
-            self.loading_win,
-            text="准备加载图片...",
-            bg="white",
-            font=("微软雅黑", 11)
-        )
-        self.loading_label.pack(expand=True)
-
-        def start_move(event):
-            self.offset_x = event.x
-            self.offset_y = event.y
-
-        def do_move(event):
-            x = event.x_root - self.offset_x
-            y = event.y_root - self.offset_y
-            self.loading_win.geometry(f"+{x}+{y}")
-
-        self.loading_win.bind("<ButtonPress-1>", start_move)
-        self.loading_win.bind("<B1-Motion>", do_move)
-
-    # =========================
     # 刷新加载文字（主线程）
     # =========================
     def update_loading_text(self):
-        self.loading_label.config(text=self.current_text)
-
         if self.loading_done:
             self.init_pet()
-        else:
-            self.root.after(100, self.update_loading_text)
+            return
+
+        if self.loading_ui:
+            self.loading_ui.update_progress(self.current_text)
+
+        self.root.after(100, self.update_loading_text)
 
     # =========================
     # 初始化桌宠（主线程）
@@ -117,7 +82,8 @@ class DesktopPet:
         self.durations = self.current_anim["durations"]
         self.current_frame = 0
 
-        self.loading_win.destroy()
+        self.loading_ui.destroy()
+        self.loading_ui = None
         self.root.deiconify()
 
         self.label = tk.Label(self.root, image=self.frames[self.current_frame], bg="white")
