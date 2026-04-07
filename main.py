@@ -13,9 +13,10 @@ class DesktopPet:
     def __init__(self):
         # ===== 选择图片 =====
         ui = LauncherUI()
-        self.image_paths = ui.run()
 
-        if not self.image_paths:
+        self.image_configs = ui.run()
+
+        if not self.image_configs:
             messagebox.showerror("错误", "未选择任何图片！")
             exit()
 
@@ -47,9 +48,12 @@ class DesktopPet:
     def load_images_async(self):
         self.all_gifs = []
 
-        for i, path in enumerate(self.image_paths):
-            self.current_text = f"正在处理第 {i+1}/{len(self.image_paths)} 张图片..."
-            anim = load_image_frames(path)
+        for i, item in enumerate(self.image_configs):
+            path = item["path"]
+            scale = item["scale"]
+
+            self.current_text = f"正在处理第 {i+1}/{len(self.image_configs)} 张图片..."
+            anim = load_image_frames(path, scale)
             self.all_gifs.append(anim)
 
         self.loading_done = True
@@ -230,6 +234,9 @@ class DesktopPet:
         self.root.geometry(f"+{x}+{y}")
 
     def on_release(self, event):
+        if not hasattr(self, "start_x"):
+            return
+
         dx = abs(event.x_root - self.start_x)
         dy = abs(event.y_root - self.start_y)
 

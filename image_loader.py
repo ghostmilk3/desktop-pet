@@ -2,7 +2,7 @@ from PIL import Image, ImageTk
 from effects import generate_wobble_frames
 
 
-def load_image_frames(path):
+def load_image_frames(path, scale=0.065):
     """
     统一加载图片：
     - GIF：保持原始动画 + 原始帧间隔
@@ -26,8 +26,8 @@ def load_image_frames(path):
 
                 # 缩放（不改变节奏）
                 new_size = (
-                    int(frame.width * 0.065),
-                    int(frame.height * 0.065)
+                    int(frame.width * scale),
+                    int(frame.height * scale)
                 )
                 resized = frame.resize(new_size)
 
@@ -61,8 +61,8 @@ def load_image_frames(path):
 
         for frame in frames:
             new_size = (
-                int(frame.width * 0.065),
-                int(frame.height * 0.065)
+                int(frame.width * scale),
+                int(frame.height * scale)
             )
             resized = frame.resize(new_size)
 
