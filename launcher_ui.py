@@ -127,6 +127,7 @@ class LauncherUI:
             )
 
         cute_btn("📁 选择图片", self.select_files).pack(side="left", padx=4)
+        cute_btn("🍀 一键统一大小", self.apply_scale_to_all).pack(side="left", padx=4)
         cute_btn("🗑 删除", self.remove_selected).pack(side="left", padx=4)
         cute_btn("✨ 召唤桌宠", self.start).pack(side="left", padx=4)
 
@@ -225,6 +226,18 @@ class LauncherUI:
     def on_close(self):
         import sys
         sys.exit()
+
+    def apply_scale_to_all(self):
+        if not self.paths:
+            return
+
+        scale = self.scale_slider.get()
+
+        for p in self.paths:
+            self.scales[p] = scale
+
+        # 刷新当前预览
+        self.on_select(None)
 
     def run(self):
         self.root.mainloop()
